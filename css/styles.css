@@ -444,7 +444,7 @@ ul{ list-style: none; margin: 0; padding: 0; }
 
 .trials-grid{
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: 28px;
 }
 
@@ -634,4 +634,30 @@ ul{ list-style: none; margin: 0; padding: 0; }
   .nav-links a{ padding: 16px 24px; width: 100%; }
   .hero-laurel{ display: none; }
   .chapter{ padding: 70px 20px; }
+}
+
+/* Trial write-up links */
+.trial-link{
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--gold-soft);
+  text-decoration: none;
+}
+.trial-link:hover{ color: var(--gold); text-decoration: underline; }
+.trial-link.is-pending{
+  pointer-events: none;
+  color: var(--text-dim);
+}
+.trial-link.is-pending::after{
+  content: "Coming soon";
+  display: inline-block;
+  white-space: nowrap;
+  margin-left: 8px;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lavender);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 2px 8px;
 }
