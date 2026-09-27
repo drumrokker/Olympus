@@ -1,7 +1,5 @@
 # Home Lab Case Study: Segmented Network Foundation
 
-*Portfolio copy — narrative summary with supporting evidence, suitable to show an employer or include in a GitHub repo/application. For the full technical build log (interface tables, exact IPs, rule-by-rule change history), see the working copy.*
-
 ---
 
 ## Overview
