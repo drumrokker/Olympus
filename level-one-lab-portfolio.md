@@ -40,21 +40,25 @@ Each test client also demonstrates holding two addresses at once on the same int
 
 *Same pattern on the Staff client: DHCP-leased 10.10.10.2 alongside a static secondary address, confirming the DHCP scope and static addressing coexist without conflict.*
 
-## Troubleshooting Highlight 1: Interfaces Start With Zero Rules (Step 4 — Segmentation Policy)
+## Step 4: Network Segmentation
 
-Step 4 of the build is where segmentation itself gets defined: static addressing on each new interface (Staff and Guest), a DHCP scope per segment, and a firewall policy that keeps the two segments from reaching each other by default. After building the two segments, Staff and Guest could obtain DHCP leases but had no route to the internet. Investigation showed that pfSense's automatic "allow this network out" rule only applies to the interface literally named LAN — newly created interfaces start with zero rules, meaning no traffic passes in or out by default. Rather than solving this with a single broad "allow everything" rule (which would have silently undone the segmentation between Staff and Guest), I implemented an ordered pair of rules per interface: an explicit block of traffic destined for the other segment, followed by a general allow rule for everything else. This block rule *is* the segmentation policy — it's the proof that Staff and Guest are actually isolated from each other, not just routed through the same firewall.
+Step 4 of the build plan is where segmentation becomes real, and it's the deliberate centerpiece of the whole lab — not a fix for something broken, but the actual design goal. Once Staff and Guest had static addressing and their own DHCP scopes, the remaining piece was a firewall policy that keeps the two segments from reaching each other by default: the same pattern used in real environments to keep a guest Wi-Fi network away from internal systems, or one department's devices isolated from another's.
+
+The policy itself is a simple, ordered pair of rules on each interface: a rule that explicitly denies traffic destined for the other segment, evaluated *before* a general rule that allows everything else out to the internet. The order is what makes it work — the deny rule has to sit above the general allow, or it never gets a chance to act.
 
 ![Guest rules, initial pass](images/03-guest-rules-initial.png)
 
-*Guest interface after the fix: a block rule targeting the Staff segment, followed by a general allow rule restoring internet access.*
+*Guest interface's segmentation policy: a deny rule targeting the Staff segment, evaluated first, followed by a general allow rule for everyday traffic.*
 
 ![Staff rules, initial pass](images/04-staff-rules-initial.png)
 
-*The mirrored rule pair on the Staff interface.*
+*The mirrored policy on the Staff interface.*
 
-This restored internet access for both segments while preserving — and making explicit and auditable — the isolation between them.
+With this pair of rules in place on both interfaces, Staff and Guest can each reach the internet independently while remaining walled off from one another — the foundational control that the rest of the lab builds on, and later tests against.
 
-There's a subtlety in these two rule sets worth calling out, because it's the same one that resurfaces below: each block rule's destination is scoped using pfSense's **"address"** object type, not **"subnets."** In pfSense, "address" matches only one specific IP — in this case, the firewall's own interface IP on the opposite segment — while "subnets" matches the entire network range behind that interface. The two options sit right next to each other in the same dropdown and look almost identical at a glance, but they produce very different firewalls: one blocks a single address that real client traffic rarely touches directly, the other blocks the whole segment. At this point in the build, the rules *looked* like a working segmentation policy — internet access came back, the GUI showed a clean block-then-allow pair — but the block itself wasn't actually scoped to stop ordinary Staff-to-Guest or Guest-to-Staff traffic yet. That gap didn't surface until the segmentation test in Step 7, covered next.
+## Troubleshooting Highlight 1: Interfaces Start With Zero Rules
+
+Getting to that policy wasn't automatic, and the gap in between is worth documenting on its own. After building the two segments, Staff and Guest could obtain DHCP leases but had no route to the internet at all. Investigation showed that pfSense's automatic "allow this network out" rule only applies to the interface literally named LAN — newly created interfaces start with zero rules, meaning no traffic passes in or out by default, segmentation or otherwise. Rather than solving this with a single broad "allow everything" rule (which would have silently undone the segmentation shown above), I added the general allow rule only after the deny rule was already in place on each interface — restoring everyday connectivity without ever opening a gap between Staff and Guest.
 
 ## Troubleshooting Highlight 2: A Narrow Exception, and a Hidden Rule-Scope Bug
 
@@ -76,7 +80,7 @@ Despite the new rule appearing correctly scoped and correctly ordered, the initi
 
 These two failed tests are worth pausing on, because they're doing double duty: on their own, a Staff host and a Guest host failing to reach each other is exactly the proof-of-segmentation this lab set out to produce back in Step 4 — the deny policy was, in fact, stopping ordinary cross-segment traffic. The problem was narrower than "segmentation isn't working" — it was that *this specific exception* wasn't taking effect on top of it.
 
-Rather than guessing further, I used each rule's built-in state/byte counters — a running total of traffic that has actually matched that rule — to see what was really happening. The new exception rule showed zero traffic matched, meaning the problem was upstream of the rule's own logic. Reviewing the general block rule directly above it turned up the real issue: its destination field was scoped to the object type **"address"** (which matches only pfSense's own interface IP) rather than **"subnets"** (which matches actual client traffic) — the same "address" vs. "subnets" distinction flagged back in Step 4. In other words, the misconfiguration wasn't new — it had been sitting in the ruleset since Step 4, just never exercised by a test specific enough to expose it. Ordinary Staff and Guest hosts happened to fail their reachability tests for the right reason (segmentation-by-default plus the exception not yet matching), which is why the bug went unnoticed until this point.
+Rather than guessing further, I used each rule's built-in state/byte counters — a running total of traffic that has actually matched that rule — to see what was really happening. The new exception rule showed zero traffic matched, meaning the problem was upstream of the rule's own logic. Reviewing the general block rule directly above it — the same deny rule built back in Step 4 — turned up the real issue: its destination field was scoped to the object type **"address"** (which matches only pfSense's own interface IP) rather than **"subnets"** (which matches actual client traffic). The two options sit right next to each other in the same dropdown and look almost identical at a glance, but produce very different firewalls: one blocks a single address that real client traffic rarely touches directly, the other blocks the whole segment behind that interface. In other words, the Step 4 policy had been under-scoped since it was first written — it just hadn't been exercised by a test specific enough to expose it. Ordinary Staff and Guest hosts still failed their reachability tests for the right reason (segmentation-by-default plus the exception not yet matching), which is why the bug went unnoticed until this point.
 
 After correcting both interfaces' block rules to the proper subnet scope, the ruleset was re-verified:
 
