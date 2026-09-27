@@ -40,9 +40,9 @@ Each test client also demonstrates holding two addresses at once on the same int
 
 *Same pattern on the Staff client: DHCP-leased 10.10.10.2 alongside a static secondary address, confirming the DHCP scope and static addressing coexist without conflict.*
 
-## Step 4: Network Segmentation
+## Network Segmentation
 
-Step 4 of the build plan is where segmentation becomes real, and it's the deliberate centerpiece of the whole lab — not a fix for something broken, but the actual design goal. Once Staff and Guest had static addressing and their own DHCP scopes, the remaining piece was a firewall policy that keeps the two segments from reaching each other by default: the same pattern used in real environments to keep a guest Wi-Fi network away from internal systems, or one department's devices isolated from another's.
+ Once Staff and Guest had static addressing and their own DHCP scopes, the remaining piece was a firewall policy that keeps the two segments from reaching each other by default: the same pattern used in real environments to keep a guest Wi-Fi network away from internal systems, or one department's devices isolated from another's.
 
 The policy itself is a simple, ordered pair of rules on each interface: a rule that explicitly denies traffic destined for the other segment, evaluated *before* a general rule that allows everything else out to the internet. The order is what makes it work — the deny rule has to sit above the general allow, or it never gets a chance to act.
 
@@ -54,7 +54,7 @@ The policy itself is a simple, ordered pair of rules on each interface: a rule t
 
 *The mirrored policy on the Staff interface.*
 
-With this pair of rules in place on both interfaces, Staff and Guest can each reach the internet independently while remaining walled off from one another — the foundational control that the rest of the lab builds on, and later tests against.
+With this pair of rules in place on both interfaces, Staff and Guest can each reach the internet independently while remaining walled off from one another — the foundational control that the rest of the lab builds on.
 
 ## Troubleshooting Highlight 1: Interfaces Start With Zero Rules
 
