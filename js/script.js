@@ -1,5 +1,4 @@
-// Mount Olympus — A Security Saga
-// Small progressive-enhancement script: nav toggle, scroll reveal, footer year, contact form.
+// Portfolio site script: nav toggle, scroll reveal, footer year.
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -23,13 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Scroll-reveal for chapter content
+  // Scroll reveal. Content stays visible if IntersectionObserver is unavailable.
   const revealTargets = document.querySelectorAll(
-    '.chapter-head, .origin-grid, .trials-source, .trial-card, .armory-case, .oracle-wrap'
+    '.section-head, .about-grid, .project-card, .skill-card, .cert, .contact-links'
   );
-  revealTargets.forEach(el => el.classList.add('reveal'));
 
   if ('IntersectionObserver' in window) {
+    revealTargets.forEach(el => el.classList.add('reveal'));
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -37,42 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
     revealTargets.forEach(el => observer.observe(el));
-  } else {
-    revealTargets.forEach(el => el.classList.add('is-visible'));
-  }
-
-  // Contact form — submits to Formspree via AJAX, stays in-page
-  const form = document.getElementById('contactForm');
-  const formNote = document.getElementById('formNote');
-  if (form && formNote) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const submitBtn = form.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      formNote.textContent = 'Sending your words to Olympus…';
-
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: new FormData(form),
-          headers: { 'Accept': 'application/json' }
-        });
-
-        if (response.ok) {
-          formNote.textContent = 'Your message has reached David — expect a reply soon.';
-          form.reset();
-        } else {
-          formNote.textContent = 'Something went wrong. Please try again, or email davidmnovis@gmail.com directly.';
-        }
-      } catch (err) {
-        formNote.textContent = 'Something went wrong. Please try again, or email davidmnovis@gmail.com directly.';
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
   }
 
 });
