@@ -2,11 +2,11 @@
 
 *November 5<sup>th</sup> 2026*
 
-<img src="Robberies_by_Zone_and_Day_Oct2026.png" width="100%">
+<img src="images/Robberies_by_Zone_and_Day_Oct2026.png" width="100%">
 
 There were 35 robberies during the month of October 2026. Within this time frame, there were quite a few patterns worth recognizing. Zone 5 is a hotspot on account of its’ size. Zone 5 has about 2.5 times Zone 3’s robbery density even though Zone 3 is 2.9x larger in size than Zone 5.
 
-<img src="Robbery_Firearm_by_Location_Oct2026.png" width="66%" align="left">
+<img src="images/Robbery_Firearm_by_Location_Oct2026.png" width="66%" align="left">
 
 There were some questions about if there were certain days of the week that were more common than others, so that information was corroborated into the table above as well. A trend seen is that Monday and Tuesday were both at least 37.5% more common of a choice for robberies than the other days of the week.
 
