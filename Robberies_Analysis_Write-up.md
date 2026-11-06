@@ -27,4 +27,4 @@ In summary, in October 2026, Atlanta recorded 35 robberies. Zone 5 was the dense
 
 
 
-The image above shows the APD zoning, and within a heatmap identifying the robberies. There seems to be a trend of robberies running up and down the exits of I-75.
+The image above shows the APD zoning, and within a heatmap identifying the robberies in QGIS by adding layers, and pulling CSV and GeoJSON data from Atlanta PD's open data. There seems to be a trend of robberies running up and down the exits of I-75.
